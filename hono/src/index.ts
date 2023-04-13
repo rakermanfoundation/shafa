@@ -27,7 +27,7 @@ app.use("*", prettyJSON());
 
 app.get("/", (c) => c.text("Shafa API v1.0.0"));
 
-/**
+/** Leeza
  *  GET handling
  *
  *  handle GET requests from user fetching all items
@@ -43,11 +43,50 @@ app.get("/items/:type", async (c) => {
     const result = await faunaClient.query(
       Call(Function("getActiveItemsByType"), user, type)
     );
-
+    // send response:
     return c.json(result);
   } catch (error) {
+    // something went wrong
     return c.json(error);
   }
+});
+
+
+/** Leeza
+ *  DELETE item (soft)
+ * 
+ *  archives the given item without deleting it
+ *  permanently from the database
+ */
+app.delete('/item/archive', async (c) => {
+    try {
+        // get user id and item id
+        const { uuid, user } = c.req.query();
+        // query database
+        const result = await faunaClient.query(
+            Call(Function("archiveItem"), user, uuid)
+        )
+        // return confirmation
+        return c.json(result);
+    } catch(error) {
+        // something went wrong
+        return c.json(error);
+    }
+});
+
+app.delete('/item/remove', async (c) => {
+    try {
+        // get user id and item id
+        const { uuid, user } = c.req.query();
+        // query database
+        const result = await faunaClient.query(
+            Call(Function("removeItem"), user, uuid)
+        )
+        // return confirmation
+        return c.json(result);
+    } catch (error) {
+        return c.json(error)
+    }
 });
 
 export default app;

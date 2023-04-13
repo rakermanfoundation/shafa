@@ -7,54 +7,47 @@
  * Richard Yang, Sengdao Inthavong
  */
 
-import { Hono } from 'hono'
-import { logger } from 'hono/logger'
-import { prettyJSON } from 'hono/pretty-json'
-import { z } from 'zod'
-import { zValidator } from '@hono/zod-validator'
-import * as jose from 'jose'
-import faunadb from 'faunadb';
+import { Hono } from "hono";
+import { logger } from "hono/logger";
+import { prettyJSON } from "hono/pretty-json";
+import { z } from "zod";
+import { zValidator } from "@hono/zod-validator";
+import * as jose from "jose";
+import faunadb from "faunadb";
 
-const faunaClient = new faunadb.Client({ secret: "fnAFBYEXE-AAUG-ngNcv0DP_Qs36eKVqCi3zBrLc" });
-const {Call, Function } = faunadb.query;
+const faunaClient = new faunadb.Client({
+  secret: "fnAFBYEXE-AAUG-ngNcv0DP_Qs36eKVqCi3zBrLc",
+});
+const { Call, Function } = faunadb.query;
 
-const app = new Hono<{ Bindings: Bindings }>()
+const app = new Hono<{ Bindings: Bindings }>();
 
-app.use('*', logger())
-app.use('*', prettyJSON())
+app.use("*", logger());
+app.use("*", prettyJSON());
 
-app.get('/', (c) => c.text('Shafa API v1.0.0'))
+app.get("/", (c) => c.text("Shafa API v1.0.0"));
 
 /**
  *  GET handling
- * 
+ *
  *  handle GET requests from user fetching all items
  *  of specific type
  */
 
-app.get('/items/:type', async (c) => {
-    try {
-        const type = await c.req.param("type");
-        const body = await c.req.json();
+app.get("/items/:type", async (c) => {
+  try {
+    const type = await c.req.param("type");
+    const { user } = await c.req.query();
 
-        console.log('body', body);
+    // try to query the database:
+    const result = await faunaClient.query(
+      Call(Function("getActiveItemsByType"), user, type)
+    );
 
-        // try to query the database:
-        const result = await faunaClient.query(
-            Call(
-                Function("getActiveItemsByType"),
-                body.user,
-                type
-            )
-        );
-        console.log(result);
+    return c.json(result);
+  } catch (error) {
+    return c.json(error);
+  }
+});
 
-        return c.json(result);
-
-    } catch(error) {
-        console.log('error', error);
-        return c.json(error);
-    }
-})
-
-export default app
+export default app;

@@ -27,11 +27,27 @@ app.use("*", prettyJSON());
 
 app.get("/", (c) => c.text("Shafa API v1.0.0"));
 
-/** Leeza
- *  GET handling
+
+/*
+ * GET /items/:type
  *
- *  handle GET requests from user fetching all items
- *  of specific type
+ * requests items of specific type for given user
+ * only returns active items
+ *
+ * @path_param {string} type - type of item (bottom/top/layer/shoes/etc)
+ * @path_query {string} user - unique username
+ *
+ * @returns    {json}:
+ * "data" : [
+ *  "data": {
+ *        "user": string,
+ *        "uuid": string,
+ *        "type": string,
+ *        "subtype": string,
+ *        ...
+ *    }
+ * ]
+ * ...
  */
 
 app.get("/items/:type", async (c) => {
@@ -52,11 +68,16 @@ app.get("/items/:type", async (c) => {
 });
 
 
-/** Leeza
- *  DELETE item (soft)
- * 
- *  archives the given item without deleting it
- *  permanently from the database
+/*
+ * DELETE /item/archive
+ *
+ * soft delete of the item from the database
+ *
+ * @path_query {string} user - unique username
+ * @path_query {string} uuid - unique item id
+ *
+ * @returns    {json}
+ * ...
  */
 app.delete('/item/archive', async (c) => {
     try {
@@ -74,6 +95,18 @@ app.delete('/item/archive', async (c) => {
     }
 });
 
+
+/*
+ * DELETE /item/remove
+ *
+ * permanent delete of the item from the database
+ *
+ * @path_query {string} user - unique username
+ * @path_query {string} uuid - unique item id
+ *
+ * @returns    {json}
+ * ...
+ */
 app.delete('/item/remove', async (c) => {
     try {
         // get user id and item id
